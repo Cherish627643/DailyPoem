@@ -26,7 +26,18 @@ fun DailyPoemApp(viewModel: PoemViewModel = viewModel()) {
             DetailScreen(
                 viewModel = viewModel,
                 poemId = id,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onPoetClick = { author ->
+                    viewModel.openPoet(author)
+                    navController.navigate("poet")
+                }
+            )
+        }
+        composable("poet") {
+            PoetScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+                onPoemClick = { id -> navController.navigate("detail/$id") }
             )
         }
     }

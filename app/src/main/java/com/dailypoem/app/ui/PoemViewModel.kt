@@ -24,10 +24,16 @@ class PoemViewModel(application: Application) : AndroidViewModel(application) {
     private val _allPoems = MutableStateFlow<List<Poem>>(emptyList())
     val allPoems: StateFlow<List<Poem>> = _allPoems.asStateFlow()
 
+    private val _authorPoems = MutableStateFlow<List<Poem>>(emptyList())
+    val authorPoems: StateFlow<List<Poem>> = _authorPoems.asStateFlow()
+
     var query by mutableStateOf("")
         private set
 
     var currentPoem by mutableStateOf<Poem?>(null)
+        private set
+
+    var selectedAuthor by mutableStateOf<String?>(null)
         private set
 
     val todayText: String = LocalDate.now().format(
@@ -53,6 +59,14 @@ class PoemViewModel(application: Application) : AndroidViewModel(application) {
         if (all.isEmpty()) return
         val pool = if (all.size == 1) all else all.filter { it.id != currentPoem?.id }
         currentPoem = pool[Random.nextInt(pool.size)]
+    }
+
+    /** 进入诗人作品页前，记录作者并查询其全部作品。 */
+    fun openPoet(author: String) {
+        selectedAuthor = author
+        viewModelScope.launch {
+            _authorPoems.value = repository.byAuthor(author)
+        }
     }
 
     private fun dailyPoem(all: List<Poem>): Poem? {

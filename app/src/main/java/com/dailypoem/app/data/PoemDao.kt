@@ -19,6 +19,9 @@ interface PoemDao {
     )
     suspend fun search(query: String): List<Poem>
 
+    @Query("SELECT * FROM poems WHERE author = :author ORDER BY id")
+    suspend fun getByAuthor(author: String): List<Poem>
+
     @Insert
     suspend fun insertAll(poems: List<Poem>)
 

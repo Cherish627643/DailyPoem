@@ -1,6 +1,7 @@
 package com.dailypoem.app.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,7 +51,8 @@ import com.dailypoem.app.ui.theme.PoemSerif
 fun DetailScreen(
     viewModel: PoemViewModel,
     poemId: Long,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onPoetClick: (String) -> Unit
 ) {
     val allPoems by viewModel.allPoems.collectAsStateWithLifecycle()
     val poem = allPoems.firstOrNull { it.id == poemId }
@@ -90,11 +93,20 @@ fun DetailScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 28.dp, vertical = 16.dp)
             ) {
-                Text(
-                    text = "${poem.dynasty} · ${poem.author}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = InkMuted
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "${poem.dynasty} · ",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = InkMuted
+                    )
+                    Text(
+                        text = poem.author,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Accent,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable { onPoetClick(poem.author) }
+                    )
+                }
                 Spacer(Modifier.height(12.dp))
                 Text(
                     text = poem.title,

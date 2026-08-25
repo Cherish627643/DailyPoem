@@ -12,6 +12,8 @@ class PoemRepository(private val dao: PoemDao) {
 
     suspend fun getById(id: Long): Poem? = dao.getById(id)
 
+    suspend fun byAuthor(author: String): List<Poem> = dao.getByAuthor(author)
+
     suspend fun search(query: String): List<Poem> {
         val keyword = query.trim()
         return if (keyword.isEmpty()) dao.getAll() else dao.search(keyword)
