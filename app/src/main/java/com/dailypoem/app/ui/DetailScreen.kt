@@ -30,9 +30,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -56,7 +53,6 @@ fun DetailScreen(
 ) {
     val allPoems by viewModel.allPoems.collectAsStateWithLifecycle()
     val poem = allPoems.firstOrNull { it.id == poemId }
-    var favorite by rememberSaveable(poemId) { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -142,23 +138,23 @@ fun DetailScreen(
                 shadowElevation = 8.dp
             ) {
                 Button(
-                    onClick = { favorite = !favorite },
+                    onClick = { viewModel.toggleFavorite(poem.id, !poem.isFavorite) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .navigationBarsPadding()
                         .padding(horizontal = 24.dp, vertical = 12.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (favorite) Accent else Ink,
+                        containerColor = if (poem.isFavorite) Accent else Ink,
                         contentColor = Color.White
                     )
                 ) {
                     Icon(
-                        imageVector = if (favorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        imageVector = if (poem.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = null
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text(if (favorite) "已收藏" else "收藏")
+                    Text(if (poem.isFavorite) "已收藏" else "收藏")
                 }
             }
         }

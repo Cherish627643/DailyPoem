@@ -22,6 +22,12 @@ interface PoemDao {
     @Query("SELECT * FROM poems WHERE author = :author ORDER BY id")
     suspend fun getByAuthor(author: String): List<Poem>
 
+    @Query("UPDATE poems SET isFavorite = :favorite WHERE id = :id")
+    suspend fun setFavorite(id: Long, favorite: Boolean)
+
+    @Query("SELECT * FROM poems WHERE isFavorite = 1 ORDER BY id")
+    suspend fun getFavorites(): List<Poem>
+
     @Insert
     suspend fun insertAll(poems: List<Poem>)
 

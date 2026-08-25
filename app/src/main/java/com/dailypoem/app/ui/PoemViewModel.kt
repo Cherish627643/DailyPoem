@@ -27,6 +27,9 @@ class PoemViewModel(application: Application) : AndroidViewModel(application) {
     private val _authorPoems = MutableStateFlow<List<Poem>>(emptyList())
     val authorPoems: StateFlow<List<Poem>> = _authorPoems.asStateFlow()
 
+    private val _favorites = MutableStateFlow<List<Poem>>(emptyList())
+    val favorites: StateFlow<List<Poem>> = _favorites.asStateFlow()
+
     var query by mutableStateOf("")
         private set
 
@@ -46,6 +49,7 @@ class PoemViewModel(application: Application) : AndroidViewModel(application) {
             val all = repository.all()
             _allPoems.value = all
             currentPoem = dailyPoem(all)
+            _favorites.value = repository.favorites()
         }
     }
 
@@ -66,6 +70,16 @@ class PoemViewModel(application: Application) : AndroidViewModel(application) {
         selectedAuthor = author
         viewModelScope.launch {
             _authorPoems.value = repository.byAuthor(author)
+        }
+    }
+
+    /** 收藏或取消收藏，并同步刷新各列表。 */
+    fun toggleFavorite(id: Long, favorite: Boolean) {
+        viewModelScope.launch {
+            repository.setFavorite(id, favorite)
+            _favorites.value = repository.favorites()
+            _allPoems.value = _allPoems.value.map { if (it.id == id) it.copy(isFavorite = favorite) else it }
+            _authorPoems.value = _authorPoems.value.map { if (it.id == id) it.copy(isFavorite = favorite) else it }
         }
     }
 

@@ -15,7 +15,8 @@ fun DailyPoemApp(viewModel: PoemViewModel = viewModel()) {
         composable("home") {
             HomeScreen(
                 viewModel = viewModel,
-                onPoemClick = { id -> navController.navigate("detail/$id") }
+                onPoemClick = { id -> navController.navigate("detail/$id") },
+                onFavoritesClick = { navController.navigate("favorites") }
             )
         }
         composable(
@@ -35,6 +36,13 @@ fun DailyPoemApp(viewModel: PoemViewModel = viewModel()) {
         }
         composable("poet") {
             PoetScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+                onPoemClick = { id -> navController.navigate("detail/$id") }
+            )
+        }
+        composable("favorites") {
+            FavoritesScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() },
                 onPoemClick = { id -> navController.navigate("detail/$id") }

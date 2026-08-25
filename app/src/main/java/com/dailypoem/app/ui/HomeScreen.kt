@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -56,7 +57,8 @@ import com.dailypoem.app.ui.theme.PoemSerif
 @Composable
 fun HomeScreen(
     viewModel: PoemViewModel,
-    onPoemClick: (Long) -> Unit
+    onPoemClick: (Long) -> Unit,
+    onFavoritesClick: () -> Unit
 ) {
     val allPoems by viewModel.allPoems.collectAsStateWithLifecycle()
     val query = viewModel.query
@@ -97,6 +99,13 @@ fun HomeScreen(
                     style = MaterialTheme.typography.headlineMedium,
                     fontFamily = PoemSerif,
                     color = Ink
+                )
+            }
+            IconButton(onClick = onFavoritesClick) {
+                Icon(
+                    imageVector = Icons.Filled.Favorite,
+                    contentDescription = "我的收藏",
+                    tint = Ink
                 )
             }
             IconButton(onClick = viewModel::swapPoem) {

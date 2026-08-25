@@ -14,6 +14,10 @@ class PoemRepository(private val dao: PoemDao) {
 
     suspend fun byAuthor(author: String): List<Poem> = dao.getByAuthor(author)
 
+    suspend fun setFavorite(id: Long, favorite: Boolean) = dao.setFavorite(id, favorite)
+
+    suspend fun favorites(): List<Poem> = dao.getFavorites()
+
     suspend fun search(query: String): List<Poem> {
         val keyword = query.trim()
         return if (keyword.isEmpty()) dao.getAll() else dao.search(keyword)

@@ -20,7 +20,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,12 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dailypoem.app.data.Poem
-import com.dailypoem.app.data.PoetProfile
-import com.dailypoem.app.data.PoetProfiles
-import com.dailypoem.app.ui.theme.Accent
 import com.dailypoem.app.ui.theme.CardBeige
 import com.dailypoem.app.ui.theme.Divider
 import com.dailypoem.app.ui.theme.Ink
@@ -44,13 +39,12 @@ import com.dailypoem.app.ui.theme.InkMuted
 import com.dailypoem.app.ui.theme.PoemSerif
 
 @Composable
-fun PoetScreen(
+fun FavoritesScreen(
     viewModel: PoemViewModel,
     onBack: () -> Unit,
     onPoemClick: (Long) -> Unit
 ) {
-    val author = viewModel.selectedAuthor.orEmpty()
-    val poems by viewModel.authorPoems.collectAsStateWithLifecycle()
+    val favorites by viewModel.favorites.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -68,102 +62,46 @@ fun PoetScreen(
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回", tint = Ink)
             }
             Text(
-                text = author,
+                text = "我的收藏",
                 style = MaterialTheme.typography.titleMedium,
                 fontFamily = PoemSerif,
                 color = Ink
             )
         }
 
-        val profile = PoetProfiles.of(author)
-        val fallbackDynasty = poems.firstOrNull()?.dynasty.orEmpty()
+        Text(
+            text = "共 ${favorites.size} 首",
+            style = MaterialTheme.typography.labelMedium,
+            color = InkMuted,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(Modifier.height(12.dp))
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item {
-                PoetIntroSection(
-                    profile = profile,
-                    fallbackDynasty = fallbackDynasty,
-                    count = poems.size
-                )
-            }
-            if (poems.isEmpty()) {
-                item {
-                    Text(
-                        text = "暂无作品",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 24.dp),
-                        color = InkMuted
-                    )
-                }
-            } else {
-                items(poems, key = { it.id }) { poem ->
-                    PoetPoemCard(poem = poem, onClick = { onPoemClick(poem.id) })
+        if (favorites.isEmpty()) {
+            Text(
+                text = "还没有收藏的诗词",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 48.dp),
+                color = InkMuted
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(favorites, key = { it.id }) { poem ->
+                    FavoritePoemCard(poem = poem, onClick = { onPoemClick(poem.id) })
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun PoetIntroSection(
-    profile: PoetProfile?,
-    fallbackDynasty: String,
-    count: Int
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBeige),
-        border = BorderStroke(1.dp, Divider)
-    ) {
-        val dynasty = profile?.dynasty ?: fallbackDynasty.ifBlank { "朝代不详" }
-        val courtesy = profile?.courtesy.orEmpty()
-        val intro = profile?.intro.orEmpty()
-
-        Column(Modifier.padding(16.dp)) {
-            Text(
-                text = dynasty,
-                style = MaterialTheme.typography.labelLarge,
-                color = Accent
-            )
-            if (courtesy.isNotBlank()) {
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = courtesy,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = InkMuted
-                )
-            }
-            if (intro.isNotBlank()) {
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = intro,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Ink,
-                    lineHeight = 22.sp
-                )
-            }
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp),
-                color = Divider
-            )
-            Text(
-                text = "收录作品 · 共 $count 首",
-                style = MaterialTheme.typography.labelMedium,
-                color = Accent
-            )
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PoetPoemCard(poem: Poem, onClick: () -> Unit) {
+private fun FavoritePoemCard(poem: Poem, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -172,12 +110,20 @@ private fun PoetPoemCard(poem: Poem, onClick: () -> Unit) {
         border = BorderStroke(1.dp, Divider)
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text(
-                text = poem.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontFamily = PoemSerif,
-                color = Ink
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = poem.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = PoemSerif,
+                    color = Ink,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "${poem.dynasty} · ${poem.author}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = InkMuted
+                )
+            }
             Spacer(Modifier.height(8.dp))
             Text(
                 text = poem.preview,
