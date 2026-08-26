@@ -106,7 +106,7 @@ fun HomeScreen(
                     color = InkMuted
                 )
                 Text(
-                    text = "每日古诗",
+                    text = "每日诗词",
                     style = MaterialTheme.typography.headlineMedium,
                     fontFamily = PoemSerif,
                     color = Ink

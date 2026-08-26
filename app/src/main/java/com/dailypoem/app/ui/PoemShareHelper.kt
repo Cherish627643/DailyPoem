@@ -86,7 +86,7 @@ object PoemShareHelper {
         root.addView(content)
 
         val footer = TextView(context).apply {
-            text = "每日古诗 · 分享"
+            text = "每日诗词 · 分享"
             setTextColor(0xFF9A9488.toInt())
             textSize = 14f
             gravity = Gravity.CENTER

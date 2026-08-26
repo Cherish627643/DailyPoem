@@ -3,10 +3,13 @@ package com.dailypoem.app.data
 import android.content.Context
 
 class PoemRepository(private val context: Context, private val dao: PoemDao) {
-    /** 首次启动时写入预置数据。 */
+    /** 按标题+作者幂等同步内置数据，新增诗词时无需清库或升级数据库。 */
     suspend fun ensureSeeded() {
-        if (dao.count() == 0) {
-            dao.insertAll(PoemJsonLoader.load(context))
+        val existingKeys = dao.getAll().map { it.title to it.author }.toSet()
+        val missing = PoemJsonLoader.load(context)
+            .filter { (it.title to it.author) !in existingKeys }
+        if (missing.isNotEmpty()) {
+            dao.insertAll(missing)
         }
     }
 
