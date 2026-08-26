@@ -9,6 +9,9 @@ import androidx.lifecycle.viewModelScope
 import com.dailypoem.app.data.AppDatabase
 import com.dailypoem.app.data.Poem
 import com.dailypoem.app.data.PoemRepository
+import com.dailypoem.app.data.SearchHistoryStore
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +23,7 @@ import kotlin.random.Random
 
 class PoemViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = PoemRepository(AppDatabase.get(application).poemDao())
+    private val historyStore = SearchHistoryStore(application)
 
     private val _allPoems = MutableStateFlow<List<Poem>>(emptyList())
     val allPoems: StateFlow<List<Poem>> = _allPoems.asStateFlow()
@@ -30,6 +34,9 @@ class PoemViewModel(application: Application) : AndroidViewModel(application) {
     private val _favorites = MutableStateFlow<List<Poem>>(emptyList())
     val favorites: StateFlow<List<Poem>> = _favorites.asStateFlow()
 
+    private val _searchHistory = MutableStateFlow<List<String>>(emptyList())
+    val searchHistory: StateFlow<List<String>> = _searchHistory.asStateFlow()
+
     var query by mutableStateOf("")
         private set
 
@@ -38,6 +45,8 @@ class PoemViewModel(application: Application) : AndroidViewModel(application) {
 
     var selectedAuthor by mutableStateOf<String?>(null)
         private set
+
+    private var searchJob: Job? = null
 
     val todayText: String = LocalDate.now().format(
         DateTimeFormatter.ofPattern("yyyy年MM月dd日 EEEE", Locale.CHINA)
@@ -50,11 +59,25 @@ class PoemViewModel(application: Application) : AndroidViewModel(application) {
             _allPoems.value = all
             currentPoem = dailyPoem(all)
             _favorites.value = repository.favorites()
+            _searchHistory.value = historyStore.load()
         }
     }
 
     fun onQueryChange(value: String) {
         query = value
+        searchJob?.cancel()
+        val keyword = value.trim()
+        if (keyword.isEmpty()) return
+        searchJob = viewModelScope.launch {
+            delay(800)
+            historyStore.add(keyword)
+            _searchHistory.value = historyStore.load()
+        }
+    }
+
+    fun clearSearchHistory() {
+        historyStore.clear()
+        _searchHistory.value = emptyList()
     }
 
     /** 手动换一首，仅改变当前显示，不影响次日按日期生成的推荐。 */

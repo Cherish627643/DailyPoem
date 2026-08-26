@@ -2,6 +2,7 @@ package com.dailypoem.app.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -61,6 +64,7 @@ fun HomeScreen(
     onFavoritesClick: () -> Unit
 ) {
     val allPoems by viewModel.allPoems.collectAsStateWithLifecycle()
+    val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
     val query = viewModel.query
     val current = viewModel.currentPoem
     val results = remember(allPoems, query) {
@@ -124,6 +128,14 @@ fun HomeScreen(
         Spacer(Modifier.height(20.dp))
 
         if (query.isBlank()) {
+            if (searchHistory.isNotEmpty()) {
+                SearchHistorySection(
+                    history = searchHistory,
+                    onSelect = viewModel::onQueryChange,
+                    onClear = viewModel::clearSearchHistory
+                )
+                Spacer(Modifier.height(20.dp))
+            }
             if (current != null) {
                 TodayCard(poem = current, onClick = { onPoemClick(current.id) })
             } else {
@@ -142,6 +154,62 @@ fun HomeScreen(
                 onPoemClick = onPoemClick,
                 modifier = Modifier.weight(1f)
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchHistorySection(
+    history: List<String>,
+    onSelect: (String) -> Unit,
+    onClear: () -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "搜索历史",
+                style = MaterialTheme.typography.titleSmall,
+                color = Ink,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = "清空",
+                style = MaterialTheme.typography.labelMedium,
+                color = Accent,
+                modifier = Modifier.clickable(onClick = onClear)
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(history) { item ->
+                Surface(
+                    onClick = { onSelect(item) },
+                    shape = RoundedCornerShape(18.dp),
+                    color = AccentLight,
+                    contentColor = Ink
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = InkMuted
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = item,
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                }
+            }
         }
     }
 }
