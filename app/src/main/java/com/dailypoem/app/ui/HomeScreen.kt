@@ -74,7 +74,8 @@ fun HomeScreen(
             allPoems.filter {
                 it.title.contains(query, ignoreCase = true) ||
                     it.author.contains(query, ignoreCase = true) ||
-                    it.content.contains(query, ignoreCase = true)
+                    it.content.contains(query, ignoreCase = true) ||
+                    it.tags.contains(query, ignoreCase = true)
             }
         }
     }

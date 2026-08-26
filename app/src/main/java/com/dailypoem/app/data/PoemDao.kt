@@ -15,7 +15,8 @@ interface PoemDao {
     @Query(
         "SELECT * FROM poems WHERE title LIKE '%' || :query || '%' " +
             "OR author LIKE '%' || :query || '%' " +
-            "OR content LIKE '%' || :query || '%' ORDER BY id"
+            "OR content LIKE '%' || :query || '%' " +
+            "OR tags LIKE '%' || :query || '%' ORDER BY id"
     )
     suspend fun search(query: String): List<Poem>
 
