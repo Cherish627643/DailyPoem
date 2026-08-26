@@ -3,6 +3,7 @@ package com.dailypoem.app.data
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface PoemDao {
@@ -31,6 +32,12 @@ interface PoemDao {
 
     @Insert
     suspend fun insertAll(poems: List<Poem>)
+
+    @Update
+    suspend fun update(poem: Poem)
+
+    @Query("DELETE FROM poems WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Long>)
 
     @Query("SELECT COUNT(*) FROM poems")
     suspend fun count(): Int
