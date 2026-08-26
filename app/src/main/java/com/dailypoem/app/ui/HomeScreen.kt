@@ -12,14 +12,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,11 +40,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -49,7 +55,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dailypoem.app.data.Poem
 import com.dailypoem.app.ui.theme.Accent
-import com.dailypoem.app.ui.theme.AccentLight
 import com.dailypoem.app.ui.theme.CardBeige
 import com.dailypoem.app.ui.theme.Divider
 import com.dailypoem.app.ui.theme.Ink
@@ -67,6 +72,7 @@ fun HomeScreen(
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
     val query = viewModel.query
     val current = viewModel.currentPoem
+    var searchFocused by remember { mutableStateOf(false) }
     val results = remember(allPoems, query) {
         if (query.isBlank()) {
             emptyList()
@@ -124,20 +130,22 @@ fun HomeScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        SearchField(query = query, onQueryChange = viewModel::onQueryChange)
+        SearchField(
+            query = query,
+            onQueryChange = viewModel::onQueryChange,
+            onFocusStateChange = { searchFocused = it }
+        )
 
         Spacer(Modifier.height(20.dp))
 
         if (query.isBlank()) {
-            if (searchHistory.isNotEmpty()) {
-                SearchHistorySection(
+            if (searchFocused && searchHistory.isNotEmpty()) {
+                SearchHistoryDropdown(
                     history = searchHistory,
                     onSelect = viewModel::onQueryChange,
                     onClear = viewModel::clearSearchHistory
                 )
-                Spacer(Modifier.height(20.dp))
-            }
-            if (current != null) {
+            } else if (current != null) {
                 TodayCard(poem = current, onClick = { onPoemClick(current.id) })
             } else {
                 Text(
@@ -159,42 +167,54 @@ fun HomeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SearchHistorySection(
+private fun SearchHistoryDropdown(
     history: List<String>,
     onSelect: (String) -> Unit,
     onClear: () -> Unit
 ) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "搜索历史",
-                style = MaterialTheme.typography.titleSmall,
-                color = Ink,
-                modifier = Modifier.weight(1f)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = CardBeige,
+        border = BorderStroke(1.dp, Divider),
+        shadowElevation = 4.dp
+    ) {
+        Column(Modifier.padding(vertical = 8.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "搜索历史",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Ink,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "清空",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Accent,
+                    modifier = Modifier.clickable(onClick = onClear)
+                )
+            }
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 12.dp),
+                color = Divider
             )
-            Text(
-                text = "清空",
-                style = MaterialTheme.typography.labelMedium,
-                color = Accent,
-                modifier = Modifier.clickable(onClick = onClear)
-            )
-        }
-        Spacer(Modifier.height(8.dp))
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(history) { item ->
-                Surface(
-                    onClick = { onSelect(item) },
-                    shape = RoundedCornerShape(18.dp),
-                    color = AccentLight,
-                    contentColor = Ink
-                ) {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 300.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                history.forEach { item ->
                     Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(item) }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
@@ -203,10 +223,11 @@ private fun SearchHistorySection(
                             modifier = Modifier.size(16.dp),
                             tint = InkMuted
                         )
-                        Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.width(10.dp))
                         Text(
                             text = item,
-                            style = MaterialTheme.typography.labelMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Ink
                         )
                     }
                 }
@@ -216,11 +237,17 @@ private fun SearchHistorySection(
 }
 
 @Composable
-private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
+private fun SearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onFocusStateChange: (Boolean) -> Unit
+) {
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .onFocusChanged { onFocusStateChange(it.isFocused) },
         placeholder = { Text("搜索题目、诗人或正文", color = InkMuted) },
         leadingIcon = {
             Icon(Icons.Filled.Search, contentDescription = null, tint = InkMuted)
