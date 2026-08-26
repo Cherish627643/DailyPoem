@@ -22,7 +22,7 @@ import java.util.Locale
 import kotlin.random.Random
 
 class PoemViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = PoemRepository(AppDatabase.get(application).poemDao())
+    private val repository = PoemRepository(application, AppDatabase.get(application).poemDao())
     private val historyStore = SearchHistoryStore(application)
 
     private val _allPoems = MutableStateFlow<List<Poem>>(emptyList())
