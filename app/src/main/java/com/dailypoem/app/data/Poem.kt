@@ -14,7 +14,8 @@ data class Poem(
     val dynasty: String,
     val content: String,
     val tags: String = "",
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val note: String = ""
 ) {
     /** 取正文前两行作为列表预览。 */
     val preview: String

@@ -140,6 +140,13 @@ fun DetailScreen(
                     color = Ink,
                     lineHeight = 34.sp
                 )
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = if (poem.note.isBlank()) "注：无" else "注：${poem.note}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF8A8A8A),
+                    lineHeight = 22.sp
+                )
                 Spacer(Modifier.height(24.dp))
             }
 

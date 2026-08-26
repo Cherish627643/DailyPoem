@@ -20,7 +20,8 @@ object PoemJsonLoader {
                     author = obj.getString("author"),
                     dynasty = obj.getString("dynasty"),
                     content = obj.getString("content"),
-                    tags = obj.optString("tags", "")
+                    tags = obj.optString("tags", ""),
+                    note = obj.optString("note", "")
                 )
             )
         }
