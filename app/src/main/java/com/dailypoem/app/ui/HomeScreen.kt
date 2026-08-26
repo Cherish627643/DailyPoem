@@ -3,6 +3,7 @@ package com.dailypoem.app.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,6 +76,7 @@ fun HomeScreen(
     val query = viewModel.query
     val current = viewModel.currentPoem
     var searchFocused by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
     val results = remember(allPoems, query) {
         if (query.isBlank()) {
             emptyList()
@@ -86,13 +90,26 @@ fun HomeScreen(
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .safeDrawingPadding()
-            .padding(horizontal = 20.dp)
     ) {
+        if (searchFocused) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures { focusManager.clearFocus() }
+                    }
+            )
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeDrawingPadding()
+                .padding(horizontal = 20.dp)
+        ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -142,7 +159,10 @@ fun HomeScreen(
             if (searchFocused && searchHistory.isNotEmpty()) {
                 SearchHistoryDropdown(
                     history = searchHistory,
-                    onSelect = viewModel::onQueryChange,
+                    onSelect = { keyword ->
+                        viewModel.onQueryChange(keyword)
+                        focusManager.clearFocus()
+                    },
                     onClear = viewModel::clearSearchHistory
                 )
             } else if (current != null) {
@@ -163,6 +183,7 @@ fun HomeScreen(
                 onPoemClick = onPoemClick,
                 modifier = Modifier.weight(1f)
             )
+        }
         }
     }
 }
