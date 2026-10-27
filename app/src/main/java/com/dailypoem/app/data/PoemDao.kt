@@ -41,4 +41,7 @@ interface PoemDao {
 
     @Query("SELECT COUNT(*) FROM poems")
     suspend fun count(): Int
+
+    @Query("SELECT COUNT(*) FROM poems WHERE category = :category")
+    suspend fun countByCategory(category: String): Int
 }

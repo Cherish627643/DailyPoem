@@ -7,7 +7,8 @@ class PoemRepository(private val context: Context, private val dao: PoemDao) {
     suspend fun ensureSeeded() {
         val jsonPoems = PoemJsonLoader.load(context)
         val existing = dao.getAll()
-        val existingByKey = existing.associateBy { it.title to it.author }
+        val builtin = existing.filter { it.category.isEmpty() }
+        val existingByKey = builtin.associateBy { it.title to it.author }
         val jsonKeys = jsonPoems.map { it.title to it.author }.toSet()
 
         val toInsert = ArrayList<Poem>()
@@ -33,9 +34,13 @@ class PoemRepository(private val context: Context, private val dao: PoemDao) {
         if (toInsert.isNotEmpty()) dao.insertAll(toInsert)
         toUpdate.forEach { dao.update(it) }
 
-        val stale = existing.filter { (it.title to it.author) !in jsonKeys }
+        val stale = builtin.filter { (it.title to it.author) !in jsonKeys }
         if (stale.isNotEmpty()) dao.deleteByIds(stale.map { it.id })
     }
+
+    suspend fun insertDownloaded(poems: List<Poem>) = dao.insertAll(poems)
+
+    suspend fun countByCategory(category: String): Int = dao.countByCategory(category)
 
     suspend fun all(): List<Poem> = dao.getAll()
 

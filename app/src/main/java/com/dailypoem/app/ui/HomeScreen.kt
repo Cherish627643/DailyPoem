@@ -24,6 +24,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Refresh
@@ -69,7 +70,8 @@ import com.dailypoem.app.ui.theme.PoemSerif
 fun HomeScreen(
     viewModel: PoemViewModel,
     onPoemClick: (Long) -> Unit,
-    onFavoritesClick: () -> Unit
+    onFavoritesClick: () -> Unit,
+    onDownloadClick: () -> Unit
 ) {
     val allPoems by viewModel.allPoems.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
@@ -127,6 +129,13 @@ fun HomeScreen(
                     style = MaterialTheme.typography.headlineMedium,
                     fontFamily = PoemSerif,
                     color = Ink
+                )
+            }
+            IconButton(onClick = onDownloadClick) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "下载诗词",
+                    tint = Ink
                 )
             }
             IconButton(onClick = onFavoritesClick) {

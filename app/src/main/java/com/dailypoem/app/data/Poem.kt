@@ -15,7 +15,8 @@ data class Poem(
     val content: String,
     val tags: String = "",
     val isFavorite: Boolean = false,
-    val note: String = ""
+    val note: String = "",
+    val category: String = ""
 ) {
     /** 取正文前两行作为列表预览。 */
     val preview: String
