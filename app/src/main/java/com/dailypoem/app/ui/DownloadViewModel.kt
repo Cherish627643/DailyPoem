@@ -32,6 +32,9 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
     var error by mutableStateOf<String?>(null)
         private set
 
+    var message by mutableStateOf<String?>(null)
+        private set
+
     init {
         refreshCounts()
     }
@@ -50,13 +53,15 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
             active = category.name
             progress = 0f
             error = null
+            message = null
             try {
-                RemotePoemDownloader.downloadCategory(
+                val count = RemotePoemDownloader.downloadCategory(
                     category = category,
                     onFile = { batch -> repository.insertDownloaded(batch) },
                     onProgress = { done, total -> progress = done.toFloat() / total }
                 )
                 refreshCounts()
+                message = "下载成功，共 $count 首"
             } catch (e: Exception) {
                 error = e.message ?: "下载失败"
             } finally {

@@ -53,6 +53,7 @@ fun DownloadScreen(
     val active = viewModel.active
     val progress = viewModel.progress
     val error = viewModel.error
+    val message = viewModel.message
 
     Column(
         modifier = Modifier
@@ -81,6 +82,14 @@ fun DownloadScreen(
             Text(
                 text = error,
                 color = Color(0xFFB4573F),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+            )
+        }
+        if (!message.isNullOrBlank()) {
+            Text(
+                text = message,
+                color = Accent,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
             )

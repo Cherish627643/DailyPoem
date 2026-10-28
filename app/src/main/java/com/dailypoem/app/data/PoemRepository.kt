@@ -1,6 +1,7 @@
 package com.dailypoem.app.data
 
 import android.content.Context
+import kotlinx.coroutines.flow.Flow
 
 class PoemRepository(private val context: Context, private val dao: PoemDao) {
     /** 与内置 JSON 做幂等同步：新增、更新字段、删除已下架诗词，并保留收藏状态。 */
@@ -41,6 +42,10 @@ class PoemRepository(private val context: Context, private val dao: PoemDao) {
     suspend fun insertDownloaded(poems: List<Poem>) = dao.insertAll(poems)
 
     suspend fun countByCategory(category: String): Int = dao.countByCategory(category)
+
+    fun observeAll(): Flow<List<Poem>> = dao.observeAll()
+
+    fun observeFavorites(): Flow<List<Poem>> = dao.observeFavorites()
 
     suspend fun all(): List<Poem> = dao.getAll()
 

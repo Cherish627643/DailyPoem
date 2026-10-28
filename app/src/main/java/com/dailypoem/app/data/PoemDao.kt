@@ -4,11 +4,15 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PoemDao {
     @Query("SELECT * FROM poems ORDER BY id")
     suspend fun getAll(): List<Poem>
+
+    @Query("SELECT * FROM poems ORDER BY id")
+    fun observeAll(): Flow<List<Poem>>
 
     @Query("SELECT * FROM poems WHERE id = :id")
     suspend fun getById(id: Long): Poem?
@@ -29,6 +33,9 @@ interface PoemDao {
 
     @Query("SELECT * FROM poems WHERE isFavorite = 1 ORDER BY id")
     suspend fun getFavorites(): List<Poem>
+
+    @Query("SELECT * FROM poems WHERE isFavorite = 1 ORDER BY id")
+    fun observeFavorites(): Flow<List<Poem>>
 
     @Insert
     suspend fun insertAll(poems: List<Poem>)

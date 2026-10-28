@@ -15,6 +15,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -55,11 +56,16 @@ class PoemViewModel(application: Application) : AndroidViewModel(application) {
     init {
         viewModelScope.launch {
             repository.ensureSeeded()
-            val all = repository.all()
-            _allPoems.value = all
-            currentPoem = dailyPoem(all)
-            _favorites.value = repository.favorites()
             _searchHistory.value = historyStore.load()
+        }
+        viewModelScope.launch {
+            repository.observeAll().collect { list ->
+                _allPoems.value = list
+                if (currentPoem == null) currentPoem = dailyPoem(list)
+            }
+        }
+        viewModelScope.launch {
+            repository.observeFavorites().collect { list -> _favorites.value = list }
         }
     }
 
@@ -100,8 +106,6 @@ class PoemViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleFavorite(id: Long, favorite: Boolean) {
         viewModelScope.launch {
             repository.setFavorite(id, favorite)
-            _favorites.value = repository.favorites()
-            _allPoems.value = _allPoems.value.map { if (it.id == id) it.copy(isFavorite = favorite) else it }
             _authorPoems.value = _authorPoems.value.map { if (it.id == id) it.copy(isFavorite = favorite) else it }
         }
     }
