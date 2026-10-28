@@ -16,15 +16,29 @@ object PoemJsonLoader {
             poems.add(
                 Poem(
                     id = 0,
-                    title = obj.getString("title"),
-                    author = obj.getString("author"),
-                    dynasty = obj.getString("dynasty"),
-                    content = obj.getString("content"),
+                    title = obj.optString("title").takeIf { it.isNotBlank() }
+                        ?: obj.optString("rhythmic").takeIf { it.isNotBlank() }
+                        ?: "无题",
+                    author = obj.optString("author").ifBlank { "佚名" },
+                    dynasty = obj.optString("dynasty").ifBlank { "未知" },
+                    content = join(obj.optJSONArray("paragraphs"))
+                        .ifBlank { obj.optString("content", "") },
                     tags = obj.optString("tags", ""),
-                    note = obj.optString("note", "")
+                    note = join(obj.optJSONArray("notes"))
+                        .ifBlank { obj.optString("note", "") }
                 )
             )
         }
         return poems
+    }
+
+    private fun join(array: JSONArray?): String {
+        if (array == null || array.length() == 0) return ""
+        return buildString {
+            for (i in 0 until array.length()) {
+                if (i > 0) append('\n')
+                append(array.optString(i))
+            }
+        }
     }
 }
