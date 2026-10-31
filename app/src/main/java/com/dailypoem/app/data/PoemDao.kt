@@ -46,6 +46,9 @@ interface PoemDao {
     @Query("DELETE FROM poems WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<Long>)
 
+    @Query("DELETE FROM poems WHERE category = :category")
+    suspend fun deleteByCategory(category: String)
+
     @Query("SELECT COUNT(*) FROM poems")
     suspend fun count(): Int
 

@@ -37,9 +37,14 @@ class PoemRepository(private val context: Context, private val dao: PoemDao) {
 
         val stale = builtin.filter { (it.title to it.author) !in jsonKeys }
         if (stale.isNotEmpty()) dao.deleteByIds(stale.map { it.id })
+
+        val abnormal = existing.filter { it.category.isNotEmpty() && isAbnormal(it) }
+        if (abnormal.isNotEmpty()) dao.deleteByIds(abnormal.map { it.id })
     }
 
     suspend fun insertDownloaded(poems: List<Poem>) = dao.insertAll(poems)
+
+    suspend fun deleteCategory(category: String) = dao.deleteByCategory(category)
 
     suspend fun countByCategory(category: String): Int = dao.countByCategory(category)
 
@@ -60,5 +65,11 @@ class PoemRepository(private val context: Context, private val dao: PoemDao) {
     suspend fun search(query: String): List<Poem> {
         val keyword = query.trim()
         return if (keyword.isEmpty()) dao.getAll() else dao.search(keyword)
+    }
+
+    private fun isAbnormal(poem: Poem): Boolean {
+        val content = poem.content.trim()
+        if (content.isEmpty() || content.startsWith("[")) return true
+        return PoemFieldMapper.isTitlePolluted(poem.title)
     }
 }

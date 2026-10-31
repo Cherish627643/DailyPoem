@@ -121,38 +121,12 @@ object RemotePoemDownloader {
         val array = JSONArray(text)
         val result = ArrayList<Poem>(array.length())
         for (i in 0 until array.length()) {
-            val obj = array.getJSONObject(i)
-            val title = obj.optString("title").takeIf { it.isNotBlank() }
-                ?: obj.optString("rhythmic").takeIf { it.isNotBlank() }
-                ?: "无题"
-            val author = obj.optString("author").ifBlank { "佚名" }
-            val content = joinArray(obj.optJSONArray("paragraphs")).ifBlank {
-                obj.optString("content", "")
-            }
-            val note = joinArray(obj.optJSONArray("notes"))
             result.add(
-                Poem(
-                    title = title,
-                    author = author,
-                    dynasty = category.dynasty,
-                    content = content,
-                    tags = category.name,
-                    note = note,
-                    category = category.name
-                )
+                PoemFieldMapper.map(array.getJSONObject(i), category.dynasty, category.name)
+                    .copy(category = category.name)
             )
         }
         return result
-    }
-
-    private fun joinArray(array: JSONArray?): String {
-        if (array == null || array.length() == 0) return ""
-        return buildString {
-            for (i in 0 until array.length()) {
-                if (i > 0) append('\n')
-                append(array.optString(i))
-            }
-        }
     }
 
     private fun encodePath(path: String): String = buildString {

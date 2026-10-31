@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -106,7 +107,9 @@ fun DownloadScreen(
                     downloaded = counts[category.name] ?: 0,
                     isActive = active == category.name,
                     progress = progress,
-                    onDownload = { viewModel.download(category) }
+                    onDownload = { viewModel.download(category) },
+                    onRedownload = { viewModel.download(category, replace = true) },
+                    onDelete = { viewModel.deleteCategory(category) }
                 )
             }
         }
@@ -120,7 +123,9 @@ private fun CategoryCard(
     downloaded: Int,
     isActive: Boolean,
     progress: Float,
-    onDownload: () -> Unit
+    onDownload: () -> Unit,
+    onRedownload: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -163,10 +168,9 @@ private fun CategoryCard(
                     style = MaterialTheme.typography.labelMedium,
                     color = InkMuted
                 )
-            } else {
+            } else if (downloaded == 0) {
                 Button(
                     onClick = onDownload,
-                    enabled = downloaded == 0,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -174,7 +178,29 @@ private fun CategoryCard(
                         contentColor = Color.White
                     )
                 ) {
-                    Text(if (downloaded > 0) "已下载" else "下载")
+                    Text("下载")
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onRedownload,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Accent)
+                    ) {
+                        Text("重新下载")
+                    }
+                    OutlinedButton(
+                        onClick = onDelete,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFB4573F))
+                    ) {
+                        Text("删除")
+                    }
                 }
             }
         }

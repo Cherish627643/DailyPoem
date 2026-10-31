@@ -47,7 +47,7 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun download(category: PoemCategory) {
+    fun download(category: PoemCategory, replace: Boolean = false) {
         if (active != null) return
         viewModelScope.launch {
             active = category.name
@@ -55,6 +55,7 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
             error = null
             message = null
             try {
+                if (replace) repository.deleteCategory(category.name)
                 val count = RemotePoemDownloader.downloadCategory(
                     category = category,
                     onFile = { batch -> repository.insertDownloaded(batch) },
@@ -67,6 +68,15 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
             } finally {
                 active = null
             }
+        }
+    }
+
+    fun deleteCategory(category: PoemCategory) {
+        if (active != null) return
+        viewModelScope.launch {
+            repository.deleteCategory(category.name)
+            refreshCounts()
+            message = "已删除「${category.name}」"
         }
     }
 }
